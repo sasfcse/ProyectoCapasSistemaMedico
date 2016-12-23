@@ -7,37 +7,35 @@ import java.sql.Date;
  *
  * @author usuario
  */
-public class citas {
+public class cita {
     private int id_citas;
     private Date fecha;
     private String hora;
-    private pacientes paciente;
-    private pacientes cedula;
     private String precio;
     private especialidades especialidad;
     private medicos medico;
+    private pacientes paciente;
 
-    public citas(int id_citas, Date fecha, String hora, pacientes paciente, pacientes cedula, String precio, especialidades especialidad, medicos medico) {
+    public cita(int id_citas, Date fecha, String hora, String precio, especialidades especialidad, medicos medico, pacientes paciente) {
         this.id_citas = id_citas;
         this.fecha = fecha;
         this.hora = hora;
-        this.paciente = paciente;
-        this.cedula = cedula;
         this.precio = precio;
         this.especialidad = especialidad;
         this.medico = medico;
+        this.paciente = paciente;
     }
 
-    public citas(Date fecha, String hora, pacientes paciente, pacientes cedula, String precio, especialidades especialidad, medicos medico) {
+    public cita(Date fecha, String hora, String precio, especialidades especialidad, medicos medico, pacientes paciente) {
         this.fecha = fecha;
         this.hora = hora;
-        this.paciente = paciente;
-        this.cedula = cedula;
         this.precio = precio;
         this.especialidad = especialidad;
         this.medico = medico;
+        this.paciente = paciente;
     }
 
+    
     public int getId_citas() {
         return id_citas;
     }
@@ -60,22 +58,6 @@ public class citas {
 
     public void setHora(String hora) {
         this.hora = hora;
-    }
-
-    public pacientes getPaciente() {
-        return paciente;
-    }
-
-    public void setPaciente(pacientes paciente) {
-        this.paciente = paciente;
-    }
-
-    public pacientes getCedula() {
-        return cedula;
-    }
-
-    public void setCedula(pacientes cedula) {
-        this.cedula = cedula;
     }
 
     public String getPrecio() {
@@ -102,13 +84,13 @@ public class citas {
         this.medico = medico;
     }
 
-    @Override
-    public String toString() {
-        return "citas{" + "id_citas=" + id_citas + ", fecha=" + fecha + ", hora=" + hora + ", paciente=" + paciente + ", cedula=" + cedula + ", precio=" + precio + ", especialidad=" + especialidad + ", medico=" + medico + '}';
+    public pacientes getPaciente() {
+        return paciente;
     }
-    
-    
-    
 
-   
+    public void setPaciente(pacientes paciente) {
+        this.paciente = paciente;
+    }
+
+    
 }

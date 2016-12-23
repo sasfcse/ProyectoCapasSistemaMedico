@@ -1,6 +1,7 @@
 
 package proyecto;
 
+import clases.medicos;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.print.PageFormat;
@@ -14,8 +15,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
+import repositorios.repositoriomedicos;
 
 public class datos_de_medicos extends javax.swing.JFrame implements Printable{
+conexion con=new conexion();
+repositoriomedicos remed=new repositoriomedicos();
 
     public datos_de_medicos() {
         initComponents();
@@ -149,7 +153,14 @@ public class datos_de_medicos extends javax.swing.JFrame implements Printable{
 
     private void bn_consultaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bn_consultaActionPerformed
         // llenar datos
-         mostrarDatos (txt_consulta.getText());
+        medicos med =remed.getMedico(txt_consulta.getText());
+         
+         lb_cedula.setText(med.getCedula());
+         lb_medico.setText(med.getNombre());
+         lb_domicilio.setText(med.getDomicilio());
+         lb_telefono.setText(med.getTelefono());
+         lb_email.setText(med.getE_mail());
+         lb_especialidad.setText(med.getEspecialidad().getNombre());
         
     }//GEN-LAST:event_bn_consultaActionPerformed
 
@@ -170,37 +181,7 @@ public class datos_de_medicos extends javax.swing.JFrame implements Printable{
             return NO_SUCH_PAGE;
         }
     }
-    void mostrarDatos(String valor){
-    String sql="";
-    sql="SELECT * FROM medicos where cedula='"+ valor+"'";
-    try{
-        Statement st = conex.createStatement();
-        ResultSet rs = st.executeQuery(sql);
-        while (rs.next()){
-           lb_cedula.setText(rs.getString(2));
-           lb_medico.setText(rs.getString(3));
-           lb_domicilio.setText(rs.getString(4));
-           lb_telefono.setText(rs.getString(5));
-           lb_email.setText(rs.getString(6));
-           lb_especialidad.setText(rs.getString(7));
-           llenartipo(lb_especialidad.getText());
-        }
-    }catch(SQLException exc){
-        System.out.println(exc.getMessage());
-    }
-}
-void llenartipo(String valor){
-    try{
-        Statement st= conex.createStatement();
-        String sql="Select * from especialidades where descripcion='"+valor + "'";
-        ResultSet rs=st.executeQuery(sql);
-        while(rs.next()){
-            lb_especialidad.setText(rs.getString(2));
-        }
-    }catch(SQLException exc){
-        System.out.println(exc.getMessage());
-    } 
-}
+    
     /**
      * @param args the command line arguments
      */
@@ -260,6 +241,6 @@ void llenartipo(String valor){
     private javax.swing.JLabel lb_telefono;
     private javax.swing.JTextField txt_consulta;
     // End of variables declaration//GEN-END:variables
-     conexion con=new conexion();
-     Connection conex=con.conexion();
+     
+ 
 }

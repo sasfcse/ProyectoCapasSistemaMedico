@@ -9,13 +9,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
+import repositorios.repositorio_ciudad;
 import repositorios.repositoriopacientes;
 
 
 public class paciente extends javax.swing.JFrame {
 conexion con=new conexion();
-     Connection conex=con.conexion();
+    repositorio_ciudad reciud = new repositorio_ciudad();
     repositoriopacientes repac=new repositoriopacientes();
     
     public paciente() {
@@ -27,19 +30,12 @@ conexion con=new conexion();
         
     }
     public void cargarcbciudad(){
-    try{
-            Statement st = conex.createStatement();
-            String sql="Select * from ciudades";
-            ResultSet rs = st.executeQuery(sql);
-            cb_ciudad.addItem("");
-            while(rs.next()){
-                cb_ciudad.addItem(rs.getString(2));
-            }
-            cb_ciudad.setSelectedIndex(-1);
-            txtid_ciudad.setText("");
-        }catch(SQLException exc){
-            System.out.println(exc.getMessage());
-        }
+     List<ciudades> ciud = reciud.getCiudades();
+    DefaultComboBoxModel dcb = new DefaultComboBoxModel();
+    for(ciudades ciudad: ciud){
+        dcb.addElement(ciudad);
+    }
+    cb_ciudad.setModel(dcb);
 }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -81,7 +77,7 @@ conexion con=new conexion();
         btregistro = new javax.swing.JButton();
         btsi = new javax.swing.JButton();
         btno = new javax.swing.JButton();
-        cb_ciudad = new javax.swing.JComboBox<>();
+        cb_ciudad = new javax.swing.JComboBox();
         txtid_ciudad = new javax.swing.JTextField();
         jLabel15 = new javax.swing.JLabel();
 
@@ -299,7 +295,8 @@ conexion con=new conexion();
 
     private void btguardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btguardarActionPerformed
         // FUNCION GUARDAR
-        ciudades ciud = new ciudades(cb_ciudad.getSelectedItem().toString());
+        
+        ciudades ciud = (ciudades)cb_ciudad.getSelectedItem();
         pacientes pac = new pacientes(txtcedula.getText(),txtnombre.getText(),Convertirfecha(),cbsexo.getSelectedItem().toString(),txtaltura.getText(),txtpeso.getText(),txt_tipo_sangre.getText(),txtalergias.getText(),txt_telefono.getText(),txtdomicilio.getText(),txt_e_mail.getText(),ciud);
         
         repac.guardar(pac);
@@ -329,7 +326,8 @@ conexion con=new conexion();
         dtfecha.setEnabled(false);
         cbsexo.setEnabled(false);
         
-        pacientes pact =(pacientes) repac.getPaciente(txtcedula.getText());
+        pacientes pact =repac.getPaciente(txtbuscar.getText());
+        txtid_cliente.setText(Integer.toString(pact.getId_personas()));
         txtcedula.setText(pact.getCedula());
         txtnombre.setText(pact.getNombres());
         dtfecha.setDate(pact.getFechanacimineto());
@@ -341,7 +339,7 @@ conexion con=new conexion();
         txt_telefono.setText(pact.getTelefono());
         txtdomicilio.setText(pact.getDomicilio());
         txt_e_mail.setText(pact.getE_mail());
-        cb_ciudad.setSelectedItem(pact.getCiudad().getNombre());
+        cb_ciudad.setSelectedItem(pact.getCiudad());
         
     }//GEN-LAST:event_btconsultarActionPerformed
 
@@ -351,9 +349,10 @@ conexion con=new conexion();
         btsalir.setEnabled(true);
         btnuevo.setEnabled(true);
         bteliminar.setEnabled(false);
-       ciudades ciud = new ciudades(cb_ciudad.getSelectedItem().toString());
+       ciudades ciud = (ciudades)cb_ciudad.getSelectedItem();
        pacientes pac = new pacientes(txtcedula.getText(),txtnombre.getText(),Convertirfecha(),cbsexo.getSelectedItem().toString(),txtaltura.getText(),txtpeso.getText(),txt_tipo_sangre.getText(),txtalergias.getText(),txt_telefono.getText(),txtdomicilio.getText(),txt_e_mail.getText(),ciud);
-       //repac.modificar(, pac);
+       repac.modificar(txtcedula.getText(),pac);
+       
     }//GEN-LAST:event_btmodificarActionPerformed
 
     private void btnuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnuevoActionPerformed
@@ -399,20 +398,6 @@ conexion con=new conexion();
 
     private void cb_ciudadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cb_ciudadActionPerformed
         // combox ciudad
-        if(cb_ciudad.getSelectedIndex() != -1){
-        try{
-            Statement st =conex.createStatement();
-            String sql = "Select * from ciudades where ciudad= '"+cb_ciudad.getSelectedItem().toString()+"'";
-            ResultSet rs =st.executeQuery(sql);
-            while (rs.next()){
-                txtid_ciudad.setText(rs.getString(1));
-            }
-            
-        }catch(SQLException exc){
-            JOptionPane.showMessageDialog(null,exc.getMessage());
-            System.out.println(exc.getMessage());
-        }   
-       }
     }//GEN-LAST:event_cb_ciudadActionPerformed
 
     private void txtcedulaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtcedulaActionPerformed
@@ -559,7 +544,7 @@ conexion con=new conexion();
     private javax.swing.JButton btregistro;
     private javax.swing.JButton btsalir;
     private javax.swing.JButton btsi;
-    private javax.swing.JComboBox<String> cb_ciudad;
+    private javax.swing.JComboBox cb_ciudad;
     private javax.swing.JComboBox<String> cbsexo;
     private com.toedter.calendar.JDateChooser dtfecha;
     private javax.swing.JLabel jLabel1;

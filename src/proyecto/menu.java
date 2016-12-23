@@ -382,7 +382,7 @@ public class menu extends javax.swing.JFrame {
 
     private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
         // FUNCION IR A MEDICO
-        medicos md = new medicos();
+        medico md = new medico();
         md.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_jMenuItem5ActionPerformed

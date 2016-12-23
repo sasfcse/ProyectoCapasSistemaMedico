@@ -1,6 +1,7 @@
 
 package proyecto;
-
+import clases.medicos;
+import clases.especialidades;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.print.PageFormat;
@@ -14,15 +15,21 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import repositorios.repositorio_especialidad;
+import repositorios.repositoriomedicos;
 
 public class tabla_de_medicos extends javax.swing.JFrame implements Printable {
-
+repositorio_especialidad resp = new repositorio_especialidad();
+repositoriomedicos remed =new repositoriomedicos();
     public tabla_de_medicos() {
         initComponents();
-        mostrarDatos("");
+       
         tb_registro.setVisible(true);
         cargarcbespecialidad();
         cbespecialidad.setVisible(false);
@@ -30,17 +37,12 @@ public class tabla_de_medicos extends javax.swing.JFrame implements Printable {
         txtcg_especialidad.setVisible(false);
     }
 public void cargarcbespecialidad() {
-        try{
-            Statement st = conex.createStatement();
-            String sql="Select * from especialidades";
-            ResultSet rs = st.executeQuery(sql);
-            cbespecialidad.addItem("");
-            while(rs.next()){
-                cbespecialidad.addItem(rs.getString(2));
-            }   
-        }catch(SQLException exc){
-            System.out.println(exc.getMessage());
-        }
+     List<especialidades> esp = resp.getEspecialidad();
+    DefaultComboBoxModel dcb = new DefaultComboBoxModel();
+    for(especialidades espe: esp){
+        dcb.addElement(espe);
+    }
+    cbespecialidad.setModel(dcb);
 }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -163,17 +165,7 @@ public void cargarcbespecialidad() {
 
     private void cbespecialidadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbespecialidadActionPerformed
         // LLENADO DE COMBOX
-        try{
-            Statement st =conex.createStatement();
-            String sql = "Select * from especialidades where descripcion = '"+cbespecialidad.getSelectedItem().toString()+"'";
-            ResultSet rs =st.executeQuery(sql);
-            while (rs.next()){
-                txtcg_especialidad.setText(rs.getString(1));
-            }
-        }catch(SQLException exc){
-            JOptionPane.showMessageDialog(null,exc.getMessage());
-            System.out.println(exc.getMessage());
-        }
+       
     }//GEN-LAST:event_cbespecialidadActionPerformed
 
     private void rbtcedulaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rbtcedulaMouseClicked
@@ -190,19 +182,20 @@ public void cargarcbespecialidad() {
 
     private void btbuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btbuscarActionPerformed
         //FUNCION BUSCAR
-        
+          List<medicos> medi = new ArrayList<medicos>();
         if(rbtcedula.isSelected()==true){
             busca=txtcedula.getText();
         }
         if(rbtespecialidad.isSelected()==true){
             busca=txtcg_especialidad.getText();
         }
-       mostrarDatos(busca);
+        medi = remed.getMedicoss(getValor(busca),busca);
+       mostrarDatos(medi);
     }//GEN-LAST:event_btbuscarActionPerformed
 
     private void btsalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btsalirActionPerformed
         // SALIR DEL REGISTRO
-        medicos md = new medicos();
+        medico md = new medico();
         md.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_btsalirActionPerformed
@@ -244,7 +237,7 @@ public void cargarcbespecialidad() {
         }
     }
     
-    void mostrarDatos(String Valor){
+    void mostrarDatos(List<medicos> medi){
        DefaultTableModel tabla = new DefaultTableModel();
        tabla.addColumn("ID");
        tabla.addColumn("CEDULA");
@@ -253,43 +246,21 @@ public void cargarcbespecialidad() {
        tabla.addColumn("E_MAIL");
        tabla.addColumn("ESPECIALIDAD");
        tb_registro.setModel(tabla);
-       String sql="";
-       if (Valor.equals("")){
-            sql="SELECT id_medico,cedula,medicos.nombre,domicilio,e_mail,especialidades.descripcion\n"+
-                "FROM medicos \n" +
-                "inner join especialidades on medicos.id_especialidad=especialidades.id_especialidad ";
-        }       
-        else{
-            if (rbtcedula.isSelected()){
-           sql="SELECT id_medico,cedula,medicos.nombre,domicilio,e_mail,especialidades.descripcion\n"+
-                "FROM medicos \n" +
-                "inner join especialidades on medicos.id_especialidad=especialidades.id_especialidad where cedula='" + Valor + "'";
-            }
-            if (rbtespecialidad.isSelected() ){
-            sql="SELECT id_medico,cedula,medicos.nombre,domicilio,e_mail,especialidades.descripcion\n"+
-                "FROM medicos \n" +
-                "inner join especialidades on medicos.id_especialidad=especialidades.id_especialidad where medicos.id_especialidad=" + Valor + "";
-            }
-        }
-        String []datos = new String[7];
-        try {
-            Statement st = conex.createStatement();
-            ResultSet rs= st.executeQuery(sql);
-            while (rs.next()){
-                datos[0]= rs.getString(1);
-                datos[1]= rs.getString(2);
-                datos[2]= rs.getString(3);
-                datos[3]= rs.getString(4);
-                datos[4]= rs.getString(5);
-                datos[5]= rs.getString(6);
+     
+       Object []datos = new Object[6];
+        for(medicos med : medi){
+                datos[0]= med.getId_medico();
+                datos[1]= med.getCedula();
+                datos[2]= med.getNombre();
+                datos[3]= med.getDomicilio();
+                datos[4]= med.getE_mail();
+                datos[5]= med.getEspecialidad().getNombre();
                 tabla.addRow(datos);
-            }
+            
             tb_registro.setModel(tabla);
             //limpiar();
-            
-        } catch(SQLException exc){
-            System.out.println(exc.getMessage());
         }
+      
     }
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
@@ -341,7 +312,22 @@ public void cargarcbespecialidad() {
     private javax.swing.JTextField txtcedula;
     private javax.swing.JTextField txtcg_especialidad;
     // End of variables declaration//GEN-END:variables
-     conexion con=new conexion();
-     Connection conex=con.conexion();
+    
+    
      public String busca="";
+     
+     public int getValor(String valor){
+         if (valor.equals("")){
+            return 0;       
+        }
+        else{
+            if (rbtcedula.isSelected()){
+                return 1;
+           }
+            if (rbtespecialidad.isSelected() ){
+                return 2;
+            }
+            return -1;
+        }
+     }
 }

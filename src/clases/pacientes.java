@@ -53,6 +53,7 @@ public class pacientes {
         this.ciudad = ciudad;
     }
 
+    
     public int getId_personas() {
         return id_personas;
     }

@@ -2,6 +2,8 @@
 package proyecto;
 
 
+import clases.ciudades;
+import clases.pacientes;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.print.PageFormat;
@@ -15,15 +17,21 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;import javax.swing.JTable ;
 
 import javax.swing.table.DefaultTableModel;
+import repositorios.repositorio_ciudad;
+import repositorios.repositoriopacientes;
 
 public class tabla_de_clientes extends javax.swing.JFrame implements Printable{
-
+ repositorio_ciudad reciud = new repositorio_ciudad();
+ repositoriopacientes repac = new repositoriopacientes();
     public tabla_de_clientes() {
         initComponents();
-        mostrarDatos("");
+      
         cargarcbciudad();
         tb_registroclientes.setVisible(true);
         txtcedula.setVisible(false);
@@ -31,18 +39,12 @@ public class tabla_de_clientes extends javax.swing.JFrame implements Printable{
         txtid_ciudad.setVisible(false);
     }
      public void cargarcbciudad(){
-    try{
-            Statement st = conex.createStatement();
-            String sql="Select * from ciudades";
-            ResultSet rs = st.executeQuery(sql);
-            cb_ciudad.addItem("");
-            while(rs.next()){
-                cb_ciudad.addItem(rs.getString(2));
-            }
-          
-        }catch(SQLException exc){
-            System.out.println(exc.getMessage());
-        }
+    List<ciudades> ciud = reciud.getCiudades();
+    DefaultComboBoxModel dcb = new DefaultComboBoxModel();
+    for(ciudades ciudad: ciud){
+        dcb.addElement(ciudad);
+    }
+    cb_ciudad.setModel(dcb);
      }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -175,14 +177,17 @@ public class tabla_de_clientes extends javax.swing.JFrame implements Printable{
     }//GEN-LAST:event_rbtcedulaMouseClicked
 
     private void btbuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btbuscarActionPerformed
+
         // FUNCION MOSTRAR EL REGISTRO ESPECIFICADO
+        List<pacientes> paci = new ArrayList<pacientes>();
        if(rbtcedula.isSelected()==true){
             busca=txtcedula.getText();
         }
         if(rbtciudad.isSelected()==true){
-            busca=txtid_ciudad.getText();
+             busca=cb_ciudad.getSelectedItem().toString();
         }
-       mostrarDatos(busca);
+       paci = repac.getPacientes(getValor(busca),busca);
+        mostrarDatos(paci);
     }//GEN-LAST:event_btbuscarActionPerformed
 
     private void btsalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btsalirActionPerformed
@@ -204,17 +209,7 @@ public class tabla_de_clientes extends javax.swing.JFrame implements Printable{
 
     private void cb_ciudadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cb_ciudadActionPerformed
         // combox ciudad
-        try{
-            Statement st =conex.createStatement();
-            String sql = "Select * from ciudades where ciudad = '"+cb_ciudad.getSelectedItem().toString()+"'";
-            ResultSet rs =st.executeQuery(sql);
-            while (rs.next()){
-                txtid_ciudad.setText(rs.getString(1));
-            }
-        }catch(SQLException exc){
-            JOptionPane.showMessageDialog(null,exc.getMessage());
-            System.out.println(exc.getMessage());
-        }
+       
     }//GEN-LAST:event_cb_ciudadActionPerformed
 
     private void bnimprimirtablaclientesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bnimprimirtablaclientesActionPerformed
@@ -267,55 +262,26 @@ public class tabla_de_clientes extends javax.swing.JFrame implements Printable{
         }
     }
     
-    void mostrarDatos(String Valor){
+    void mostrarDatos(List<pacientes> paci){
        DefaultTableModel tabla = new DefaultTableModel();
        tabla.addColumn("ID");
        tabla.addColumn("CEDULA");
        tabla.addColumn("NOMBRE");
        tabla.addColumn("FECHA");
-       tabla.addColumn("DOMICILIO");
+       tabla.addColumn("TELEFONO");
        tabla.addColumn("CIUDAD");
+        Object []datos = new Object[6];
+       for(pacientes  pac: paci){
        
-       tb_registroclientes.setModel(tabla);
-       String sql="";
-       if (Valor.equals("")){
-            sql="SELECT id_cliente,cedula,clientes.nombre,fecha,domicilio,ciudades.ciudad\n"+
-                "FROM clientes \n" +
-               "inner join ciudades on clientes.id_ciudad=ciudades.id_ciudad ";
-        }
-        else{
-            if (rbtcedula.isSelected()){
-            sql="SELECT id_cliente,cedula,clientes.nombre,fecha,domicilio,ciudades.ciudad\n"+
-                "FROM clientes \n" +
-                " inner join ciudades on clientes.id_ciudad=ciudades.id_ciudad where cedula='" + Valor + "'";
-            }
-            else{
-            if (rbtciudad.isSelected()){
-            sql="SELECT id_cliente,cedula,clientes.nombre,fecha,domicilio,ciudades.ciudad\n"+
-                "FROM clientes \n" +
-                "inner join ciudades on clientes.id_ciudad=ciudades.id_ciudad where clientes.id_ciudad=" + Valor + "";
-            }
-        }
-    }
-        String []datos = new String[7];
-        try {
-            Statement st = conex.createStatement();
-            ResultSet rs= st.executeQuery(sql);
-            while (rs.next()){
-                datos[0]= rs.getString(1);
-                datos[1]= rs.getString(2);
-                datos[2]= rs.getString(3);
-                datos[3]= rs.getString(4);
-                datos[4]= rs.getString(5);
-                datos[5]= rs.getString(6);
+                datos[0]= pac.getId_personas();
+                datos[1]= pac.getCedula();
+                datos[2]= pac.getNombres();
+                datos[3]= pac.getFechanacimineto();
+                datos[4]= pac.getTelefono();
+                datos[5]= pac.getCiudad().getNombre();
                 tabla.addRow(datos);
-            }
-            tb_registroclientes.setModel(tabla);
-            limpiar();
-            
-        }catch(SQLException exc){
-            System.out.println(exc.getMessage());
-        }
+       }
+       tb_registroclientes.setModel(tabla);
     } 
     /**
      * @param args the command line arguments
@@ -370,13 +336,26 @@ public class tabla_de_clientes extends javax.swing.JFrame implements Printable{
     private javax.swing.JTextField txtcedula;
     private javax.swing.JTextField txtid_ciudad;
     // End of variables declaration//GEN-END:variables
-     conexion con=new conexion();
-     Connection conex=con.conexion();
+    
+    
      public String busca="";
 public void limpiar(){
     txtcedula.setText("");
     txtid_ciudad.setText("");
    
 }
-    
+    public int getValor(String valor){
+         if (valor.equals("")){
+            return 0;       
+        }
+        else{
+            if (rbtcedula.isSelected()){
+                return 1;
+           }
+            if (rbtciudad.isSelected() ){
+                return 2;
+            }
+            return -1;
+        }
+}
 }

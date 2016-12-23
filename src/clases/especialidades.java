@@ -1,6 +1,8 @@
 
 package clases;
 
+import java.util.Objects;
+
 /**
  *
  * @author usuario
@@ -8,24 +10,26 @@ package clases;
 public class especialidades {
     int id_especialidad;
     String nombre;
-    int pago;
+    String pago;
 
-    public especialidades(int id_especialidad, String nombre, int pago) {
+    public especialidades(int id_especialidad, String nombre, String pago) {
         this.id_especialidad = id_especialidad;
         this.nombre = nombre;
         this.pago = pago;
     }
+//------------------------------------------------
 
-    public especialidades(String nombre, int pago) {
-        this.nombre = nombre;
-        this.pago = pago;
+    public especialidades(int id_especialidad) {
+        this.id_especialidad = id_especialidad;
     }
-
-    public especialidades(String toString) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
    
+//-------------------------------------------------
+    
+    public especialidades(int id_especialidad, String nombre) {
+        this.id_especialidad = id_especialidad;
+        this.nombre = nombre;
+    }
+//--------------------------------------------------
     public int getId_especialidad() {
         return id_especialidad;
     }
@@ -42,17 +46,42 @@ public class especialidades {
         this.nombre = nombre;
     }
 
-    public int getPago() {
+    public String getPago() {
         return pago;
     }
 
-    public void setPago(int pago) {
+    public void setPago(String pago) {
         this.pago = pago;
     }
 
     @Override
     public String toString() {
-        return "escpecialidades{" + "id_especialidad=" + id_especialidad + ", nombre=" + nombre + ", pago=" + pago + '}';
+        return  nombre ;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final especialidades other = (especialidades) obj;
+        if (!Objects.equals(this.nombre, other.nombre)) {
+            return false;
+        }
+        return true;
+    }
+    
     
 }

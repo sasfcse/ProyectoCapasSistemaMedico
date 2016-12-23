@@ -1,6 +1,7 @@
 
 package proyecto;
 
+import clases.pacientes;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.print.PageFormat;
@@ -14,9 +15,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
+import repositorios.repositoriopacientes;
 
 public class datos_de_paciente extends javax.swing.JFrame implements Printable {
-
+conexion con=new conexion();
+ repositoriopacientes repac=new repositoriopacientes();
     public datos_de_paciente() {
         initComponents();
     }
@@ -137,7 +140,7 @@ public class datos_de_paciente extends javax.swing.JFrame implements Printable {
 
         jLabel11.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel11.setText("TIPO DE SANGRE:");
-        jPanel1.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(32, 371, 105, -1));
+        jPanel1.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 370, 105, -1));
 
         jLabel12.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel12.setText("ALERGIAS:");
@@ -171,14 +174,27 @@ public class datos_de_paciente extends javax.swing.JFrame implements Printable {
         jPanel1.add(lb_domicilio, new org.netbeans.lib.awtextra.AbsoluteConstraints(198, 507, 145, 18));
         jPanel1.add(lb_email, new org.netbeans.lib.awtextra.AbsoluteConstraints(198, 536, 201, 17));
 
-        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 440, 660));
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, 650));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void bnconsultarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bnconsultarActionPerformed
         // llenar los datos
-        mostrarDatos (txt_consulta.getText());
+        pacientes pact =repac.getPaciente(txt_consulta.getText());
+     
+        lb_cedula.setText(pact.getCedula());
+        lb_nombre.setText(pact.getNombres());
+        lb_fecha.setText(pact.getFechanacimineto().toString());
+        lb_sexo.setText(pact.getSexo());
+        lb_altura.setText(pact.getAltura());
+        lb_peso.setText(pact.getPeso());
+        lb_tipodesangre.setText(pact.getTiposangre());
+        lb_alergias.setText(pact.getAlergias());
+        lb_telefono.setText(pact.getTelefono());
+        lb_domicilio.setText(pact.getDomicilio());
+        lb_email.setText(pact.getE_mail());
+        lb_ciudad.setText(pact.getCiudad().getNombre());
     }//GEN-LAST:event_bnconsultarActionPerformed
 
     private void bnimprimirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bnimprimirActionPerformed
@@ -211,45 +227,8 @@ public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws
             return NO_SUCH_PAGE;
         }
     }
-    void mostrarDatos(String valor){
-    String sql="";
-    sql="SELECT * FROM clientes where cedula='"+ valor+"'";
-    try{
-        Statement st = conex.createStatement();
-        ResultSet rs = st.executeQuery(sql);
-        while (rs.next()){
-
-            lb_cedula.setText(rs.getString(2));
-            lb_nombre.setText(rs.getString(3));
-            lb_fecha.setText(rs.getString(4));
-            lb_sexo.setText(rs.getString(5));
-            lb_altura.setText(rs.getString(6));
-            lb_peso.setText(rs.getString(7));
-            lb_tipodesangre.setText(rs.getString(8));
-            lb_alergias.setText(rs.getString(9));
-            lb_telefono.setText(rs.getString(10));
-            lb_domicilio.setText(rs.getString(11));
-            lb_email.setText(rs.getString(12));
-            lb_ciudad.setText(rs.getString(13));
-            llenarciudad(lb_ciudad.getText());
-            
-        }
-    }catch(SQLException ex){
-        System.out.println(ex.getMessage());
-    }
-    }
-void llenarciudad(String valor){
-    try{
-        Statement st= conex.createStatement();
-        String sql="Select * from ciudades where id_ciudad='"+valor + "'";
-        ResultSet rs=st.executeQuery(sql);
-        while(rs.next()){
-            lb_ciudad.setText(rs.getString(2));
-        }
-    }catch(SQLException exc){
-        System.out.println(exc.getMessage());
-    }
-    }
+    
+    
     /**
      * @param args the command line arguments
      */
@@ -321,6 +300,6 @@ void llenarciudad(String valor){
     private javax.swing.JLabel lb_tipodesangre;
     private javax.swing.JTextField txt_consulta;
     // End of variables declaration//GEN-END:variables
-     conexion con=new conexion();
-     Connection conex=con.conexion();
+     
+     
 }

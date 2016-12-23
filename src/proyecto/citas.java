@@ -1,61 +1,62 @@
 
 package proyecto;
 
+import clases.cita;
 import clases.especialidades;
+import clases.medicos;
+import clases.pacientes;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
+import repositorios.repositorio_especialidad;
 import repositorios.repositoriocitas;
+import repositorios.repositoriomedicos;
+import repositorios.repositoriopacientes;
 
 public class citas extends javax.swing.JFrame {
-
+    conexion con=new conexion();
+    repositoriopacientes repac =new repositoriopacientes();
+    repositorio_especialidad resp = new repositorio_especialidad();
+    repositoriomedicos remed = new repositoriomedicos();
     repositoriocitas recit =new repositoriocitas();
-    
+    pacientes pac ;
     public citas() {
         initComponents();
         this.setLocationRelativeTo(null);
         this.setResizable(false);
         cargarcbespecialidades();
   
-        txtid_especialidad.setVisible(false);
+      
         txtid_citas.setEnabled(false);
-        txtid_medico.setVisible(false);
+     
         txtpaciente.setEnabled(false);
         btnuevo.setEnabled(false);
         btmodificar.setEnabled(false);
         bteliminar.setEnabled(false);
     }
+    
      public void cargarcbmedico(){
-        try{
-            Statement st = conex.createStatement();
-            String sql="Select * from medicos";
-            ResultSet rs = st.executeQuery(sql);
-            cbmedico.addItem("");
-            while(rs.next()){
-                cbmedico.addItem(rs.getString(3));
-            }
-        }catch(SQLException exc){
-            System.out.println(exc.getMessage());
-        }
+         especialidades esp = (especialidades)cbespecialidad.getSelectedItem();
+        List<medicos> med = remed.getMedicos(esp.getId_especialidad());
+    DefaultComboBoxModel dcb = new DefaultComboBoxModel();
+    for(medicos medico: med){
+        dcb.addElement(medico);
     }
+    cbmedico.setModel(dcb);
+    }
+     
     public void cargarcbespecialidades(){
-        try{
-            Statement st = conex.createStatement();
-            String sql="Select * from especialidades";
-            ResultSet rs = st.executeQuery(sql);
-            
-            while(rs.next()){
-                cbespecialidad.addItem(rs.getString(2));
-            }
-            cbespecialidad.setSelectedIndex(-1);
-            txtid_especialidad.setText("");
-            txtprecio.setText("");
-        }catch(SQLException exc){
-            System.out.println(exc.getMessage());
-        }
+         List<especialidades> esp = resp.getEspecialidad();
+    DefaultComboBoxModel dcb = new DefaultComboBoxModel();
+    for(especialidades espec: esp){
+        dcb.addElement(espec);
+    }
+    cbespecialidad.setModel(dcb);
     }
 
     @SuppressWarnings("unchecked")
@@ -78,11 +79,9 @@ public class citas extends javax.swing.JFrame {
         btctc = new javax.swing.JButton();
         txthora = new javax.swing.JTextField();
         txtprecio = new javax.swing.JTextField();
-        txtid_medico = new javax.swing.JTextField();
         txtid_citas = new javax.swing.JTextField();
-        cbespecialidad = new javax.swing.JComboBox<>();
-        cbmedico = new javax.swing.JComboBox<>();
-        txtid_especialidad = new javax.swing.JTextField();
+        cbespecialidad = new javax.swing.JComboBox();
+        cbmedico = new javax.swing.JComboBox();
         btguardar = new javax.swing.JButton();
         btsalir = new javax.swing.JButton();
         bteliminar = new javax.swing.JButton();
@@ -154,7 +153,6 @@ public class citas extends javax.swing.JFrame {
             }
         });
         getContentPane().add(txtprecio, new org.netbeans.lib.awtextra.AbsoluteConstraints(207, 307, 104, -1));
-        getContentPane().add(txtid_medico, new org.netbeans.lib.awtextra.AbsoluteConstraints(610, 270, 25, -1));
         getContentPane().add(txtid_citas, new org.netbeans.lib.awtextra.AbsoluteConstraints(359, 82, 50, -1));
 
         cbespecialidad.addItemListener(new java.awt.event.ItemListener() {
@@ -175,7 +173,6 @@ public class citas extends javax.swing.JFrame {
             }
         });
         getContentPane().add(cbmedico, new org.netbeans.lib.awtextra.AbsoluteConstraints(467, 269, 130, -1));
-        getContentPane().add(txtid_especialidad, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 270, 20, -1));
 
         btguardar.setText("GUARDAR");
         btguardar.addActionListener(new java.awt.event.ActionListener() {
@@ -251,24 +248,14 @@ public class citas extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 public void cargarcomboxespecialidad(){
-    try{
-            Statement st =conex.createStatement();
-            String sql = "Select * from especialidades where descripcion= '"+cbespecialidad.getSelectedItem().toString()+"'";
-            ResultSet rs =st.executeQuery(sql);
-            while (rs.next()){
-                txtid_especialidad.setText(rs.getString(1));
-                txtprecio.setText(rs.getString(3));
-            }
-        }catch(SQLException exc){
-            JOptionPane.showMessageDialog(null,exc.getMessage());
-            System.out.println(exc.getMessage());
-        }
+   
 }
     private void btguardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btguardarActionPerformed
         // FUNCION GUARDAR
-        especialidades esp = new especialidades(cbespecialidad.getSelectedItem().toString());
-        medicos med = new medicos(cbmedico.getSelectedItem().toString());
-        //citas cit = new citas(Convertirfecha(),txthora.getText(),);
+        especialidades esp = (especialidades)cbespecialidad.getSelectedItem();
+        medicos med =(medicos)cbmedico.getSelectedItem();
+       
+        cita cit = new cita(Convertirfecha(),txthora.getText(),txtprecio.getText(),esp,med,pac);
         recit.guardar(cit);
         Limpiar();
     }//GEN-LAST:event_btguardarActionPerformed
@@ -288,8 +275,19 @@ public void cargarcomboxespecialidad(){
 
     private void btconsultarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btconsultarActionPerformed
         // CONSULTAR
+        btmodificar.setEnabled(true);
+        bteliminar.setEnabled(true);
         btguardar.setEnabled(false);
-        mostrarDatos(txtbuscar_consulta.getText());
+        cita cit =(cita) recit.getCita(txtbuscar_consulta.getText());
+        txtid_citas.setText(Integer.toString(cit.getId_citas()));
+        dtfecha.setDate(cit.getFecha());
+        txthora.setText(cit.getHora());
+        txtpaciente.setText(cit.getPaciente().getNombres());
+        txtcedula.setText(cit.getPaciente().getCedula());
+        txtprecio.setText(cit.getPrecio());
+        cbespecialidad.setSelectedItem(cit.getEspecialidad());
+        cbmedico.setSelectedItem(cit.getMedico());
+        
     }//GEN-LAST:event_btconsultarActionPerformed
 
     private void bteliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bteliminarActionPerformed
@@ -297,6 +295,8 @@ public void cargarcomboxespecialidad(){
         btnuevo.setEnabled(true);
         btguardar.setEnabled(true);
         btsalir.setEnabled(true);
+        
+        recit.eliminar(Integer.parseInt(txtid_citas.getText()));
         Limpiar();
     }//GEN-LAST:event_bteliminarActionPerformed
 
@@ -306,6 +306,12 @@ public void cargarcomboxespecialidad(){
         btsalir.setEnabled(true);
         btnuevo.setEnabled(true);
         bteliminar.setEnabled(false);
+        
+        especialidades esp = (especialidades)cbespecialidad.getSelectedItem();
+        medicos med =(medicos)cbmedico.getSelectedItem();
+       
+        cita cit = new cita(Integer.parseInt(txtid_citas.getText()),Convertirfecha(),txthora.getText(),txtprecio.getText(),esp,med,pac);
+        recit.modificar(cit);
         Limpiar();
     }//GEN-LAST:event_btmodificarActionPerformed
 
@@ -339,29 +345,18 @@ public void cargarcomboxespecialidad(){
 
     private void btctcActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btctcActionPerformed
         // consulta de nombre
-        mostrarnombre(txtcedula.getText());
+       pac=repac.getPaciente(txtcedula.getText());
+       txtpaciente.setText(pac.getNombres());
     }//GEN-LAST:event_btctcActionPerformed
 
     private void cbespecialidadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbespecialidadActionPerformed
         // CARGAR COMBOX ESPECIALIAD
-        cbmedico.removeAllItems();
-        if(cbespecialidad.getSelectedIndex() != -1){
-            cargarcomboxespecialidad();
-            try{
-                Statement st =conex.createStatement();
-                String sql = "Select * from medicos where id_especialidad = "+txtid_especialidad.getText();
-                ResultSet rs = st.executeQuery(sql);
-                while(rs.next()){
-                    cbmedico.addItem(rs.getString(3));
-                }
-                cbmedico.setSelectedIndex(-1);
-                txtid_medico.setText("");
-           }catch(SQLException exc){
-                JOptionPane.showMessageDialog(null,exc.getMessage());
-                System.out.println(exc.getMessage());
-            }
+        
+        if (cbespecialidad.getSelectedIndex()!=-1){
+            cargarcbmedico();
+            especialidades esp = (especialidades) cbespecialidad.getSelectedItem();
+            txtprecio.setText(esp.getPago());
         }
-
     }//GEN-LAST:event_cbespecialidadActionPerformed
 
     private void cbespecialidadItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbespecialidadItemStateChanged
@@ -370,20 +365,7 @@ public void cargarcomboxespecialidad(){
 
     private void cbmedicoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbmedicoActionPerformed
         // llenar combox medico
-        if(cbmedico.getSelectedIndex() != -1){
-            try{
-                Statement st =conex.createStatement();
-                String sql = "Select * from medicos where nombre= '"+cbmedico.getSelectedItem().toString()+"'";
-                ResultSet rs =st.executeQuery(sql);
-                while (rs.next()){
-                    txtid_medico.setText(rs.getString(1));
-                }
-            }catch(SQLException exc){
-                JOptionPane.showMessageDialog(null,exc.getMessage());
-                System.out.println(exc.getMessage());
-            }
-
-        }
+        
     }//GEN-LAST:event_cbmedicoActionPerformed
 
     private void bnfacturaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bnfacturaActionPerformed
@@ -393,66 +375,7 @@ public void cargarcomboxespecialidad(){
          this.dispose();
     }//GEN-LAST:event_bnfacturaActionPerformed
 
-    
-void mostrarnombre(String valor){
-    String sql="";
-    sql="SELECT * FROM clientes where cedula='"+ valor+"'";
-    try{
-       Statement st =conex.createStatement();
-       ResultSet rs =st.executeQuery(sql);
-       while(rs.next()){
-       txtpaciente.setText(rs.getString(3));
-       }
-    }catch(SQLException ex){
-        System.out.println(ex.getMessage());
-    }
-}
-    void mostrarDatos(String valor){
-    String sql="";
-    sql="SELECT * FROM citas where cedula='"+ valor+"'";
-    try{
-        Statement st = conex.createStatement();
-        ResultSet rs = st.executeQuery(sql);
-        while (rs.next()){
-            txtid_citas.setText(rs.getString(1));
-            dtfecha.setDate(rs.getDate(2));
-            txthora.setText(rs.getString(3));
-            txtpaciente.setText(rs.getString(4));
-            txtcedula.setText(rs.getString(5));
-            txtprecio.setText(rs.getString(6));
-            txtid_especialidad.setText(rs.getString(7));
-            llenarespecialidad(txtid_especialidad.getText());
-            txtid_medico.setText(rs.getString(8));  
-            llenarmedicos(txtid_medico.getText());
-        }
-    }catch(SQLException ex){
-        System.out.println(ex.getMessage());
-    }
-}
-void llenarespecialidad(String valor){
-    try{
-        Statement st= conex.createStatement();
-        String sql="Select * from especialidades where id_especialidad='"+valor + "'";
-        ResultSet rs=st.executeQuery(sql);
-        while(rs.next()){
-            cbespecialidad.setSelectedItem(rs.getString(2));
-        }
-    }catch(SQLException exc){
-        System.out.println(exc.getMessage());
-    }
-}
-void llenarmedicos(String valor){
-    try{
-        Statement st= conex.createStatement();
-        String sql="Select * from medicos where id_medico="+valor;
-        ResultSet rs=st.executeQuery(sql);
-        while(rs.next()){
-            cbmedico.setSelectedItem(rs.getString(3));
-        }
-    }catch(SQLException exc){
-        System.out.println(exc.getMessage());
-    }
-}
+ 
 //validar fecha
     public java.sql.Date Convertirfecha(){
         java.sql.Date fecha =new java.sql.Date(dtfecha.getDate().getTime());
@@ -500,8 +423,8 @@ void llenarmedicos(String valor){
     private javax.swing.JButton btmodificar;
     private javax.swing.JButton btnuevo;
     private javax.swing.JButton btsalir;
-    private javax.swing.JComboBox<String> cbespecialidad;
-    private javax.swing.JComboBox<String> cbmedico;
+    private javax.swing.JComboBox cbespecialidad;
+    private javax.swing.JComboBox cbmedico;
     private com.toedter.calendar.JDateChooser dtfecha;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -519,13 +442,10 @@ void llenarmedicos(String valor){
     private javax.swing.JTextField txtcedula;
     private javax.swing.JTextField txthora;
     private javax.swing.JTextField txtid_citas;
-    private javax.swing.JTextField txtid_especialidad;
-    private javax.swing.JTextField txtid_medico;
     private javax.swing.JTextField txtpaciente;
     private javax.swing.JTextField txtprecio;
     // End of variables declaration//GEN-END:variables
-     conexion con=new conexion();
-     Connection conex=con.conexion();
+
 private void Limpiar() {
       
         txtid_citas.setText("");
@@ -537,7 +457,6 @@ private void Limpiar() {
         txtbuscar_consulta.setText("");
         cbespecialidad.setSelectedIndex(-1);
         dtfecha.setDate(null);
-        txtid_especialidad.setText("");
-        txtid_medico.setText("");
+
     }
 }

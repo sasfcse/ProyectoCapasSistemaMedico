@@ -1,17 +1,26 @@
 
 package proyecto;
 
+import clases.especialidades;
+import clases.medicos;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
+import repositorios.repositorio_especialidad;
+import repositorios.repositoriomedicos;
 
 
-public class medicos extends javax.swing.JFrame {
-
-    public medicos() {
+public class medico extends javax.swing.JFrame {
+     conexion con=new conexion();
+     repositorio_especialidad resp = new repositorio_especialidad();
+     repositoriomedicos remed=new repositoriomedicos();
+     
+    public medico() {
         initComponents();
         this.setLocationRelativeTo(null);
         this.setResizable(false);
@@ -24,23 +33,13 @@ public class medicos extends javax.swing.JFrame {
         
     }
 
-    medicos(String toString) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 public void cargartipodemedico(){
-    try{
-            Statement st = conex.createStatement();
-            String sql="Select * from especialidades";
-            ResultSet rs = st.executeQuery(sql);
-            cbtipo.addItem("");
-            while(rs.next()){
-                cbtipo.addItem(rs.getString(2));
-            }
-            cbtipo.setSelectedIndex(-1);
-            txtcg_tipo.setText("");
-        }catch(SQLException exc){
-            System.out.println(exc.getMessage());
-        }
+    List<especialidades> esp = resp.getEspecialidad();
+    DefaultComboBoxModel dcb = new DefaultComboBoxModel();
+    for(especialidades espe: esp){
+        dcb.addElement(espe);
+    }
+    cbespecialidad.setModel(dcb);
 }
     
     @SuppressWarnings("unchecked")
@@ -72,7 +71,7 @@ public void cargartipodemedico(){
         jLabel4 = new javax.swing.JLabel();
         txt_telefono = new javax.swing.JTextField();
         txtcedula = new javax.swing.JTextField();
-        cbtipo = new javax.swing.JComboBox<>();
+        cbespecialidad = new javax.swing.JComboBox<>();
         txtcg_tipo = new javax.swing.JTextField();
         jLabel17 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
@@ -208,12 +207,12 @@ public void cargartipodemedico(){
         });
         jpanelimprimir.add(txtcedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(109, 71, 145, -1));
 
-        cbtipo.addActionListener(new java.awt.event.ActionListener() {
+        cbespecialidad.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbtipoActionPerformed(evt);
+                cbespecialidadActionPerformed(evt);
             }
         });
-        jpanelimprimir.add(cbtipo, new org.netbeans.lib.awtextra.AbsoluteConstraints(462, 147, 130, -1));
+        jpanelimprimir.add(cbespecialidad, new org.netbeans.lib.awtextra.AbsoluteConstraints(462, 147, 130, -1));
         jpanelimprimir.add(txtcg_tipo, new org.netbeans.lib.awtextra.AbsoluteConstraints(614, 145, 28, -1));
 
         jLabel17.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/fondo citas.jpg"))); // NOI18N
@@ -250,28 +249,16 @@ public void cargartipodemedico(){
 
     private void btguardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btguardarActionPerformed
         // FUNCION GUARDAR
-        
-        PreparedStatement pstm = null;
-        try{
-              pstm = conex.prepareStatement("INSERT INTO medicos(cedula,nombre,domicilio,telefono,e_mail,especialidad,id_especialidad )VALUES(?,?,?,?,?,?,?)");          
-              pstm.setString(1, txtcedula.getText().toUpperCase());
-              pstm.setString(2, txtmedico.getText().toUpperCase()); 
-              pstm.setString(3, txtdomicilio.getText().toUpperCase());
-              pstm.setString(4,txt_telefono.getText().toUpperCase());
-              pstm.setString(5,txte_mail.getText().toUpperCase());
-              pstm.setString(6, (String) cbtipo.getSelectedItem());
-              pstm.setInt(7,Integer.parseInt(txtcg_tipo.getText()));
-              pstm.executeUpdate();
-              JOptionPane.showMessageDialog(null,"registro grabado exitosamente");
-              Limpiar();
-            }catch (SQLException exc){
-                 System.out.println("Error: " + exc.getMessage() );  
-        }
+     
+        especialidades esp = (especialidades)cbespecialidad.getSelectedItem();
+        medicos med = new medicos (txtcedula.getText(),txtmedico.getText(),txtdomicilio.getText(),txt_telefono.getText(),txte_mail.getText(),esp);
+        remed.guardar(med);
+        Limpiar();
     }//GEN-LAST:event_btguardarActionPerformed
 
     private void btbuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btbuscarActionPerformed
         // FUNCION BUSCAR / CONSULTAR
-         mostrarDatos (txtconsulta.getText());
+    
         btmodificar.setEnabled(true);
         btguardar.setEnabled(false);
         bteliminar.setEnabled(true);
@@ -280,6 +267,17 @@ public void cargartipodemedico(){
         txtcedula.setEnabled(false);
         txtmedico.setEnabled(false);
         
+         medicos med =remed.getMedico(txtconsulta.getText());
+         txtid_medico.setText(Integer.toString(med.getId_medico()));
+         txtcedula.setText(med.getCedula());
+         txtmedico.setText(med.getNombre());
+         txtdomicilio.setText(med.getDomicilio());
+         txt_telefono.setText(med.getTelefono());
+         txte_mail.setText(med.getE_mail());
+         cbespecialidad.setSelectedItem(med.getEspecialidad());
+        
+         
+        
     }//GEN-LAST:event_btbuscarActionPerformed
 
     private void bteliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bteliminarActionPerformed
@@ -287,16 +285,9 @@ public void cargartipodemedico(){
         btnuevo.setEnabled(true);
         btguardar.setEnabled(true);
         btsalir.setEnabled(true);
-        PreparedStatement pst = null;
-        try{
-            pst = conex.prepareStatement("delete from medicos where id_medico=?");
-            pst.setInt(1, Integer.parseInt(txtid_medico.getText()));
-            pst.executeUpdate();
-            JOptionPane.showMessageDialog(null,"registro elimidado exitosamente");
-            Limpiar();
-        }catch(SQLException exc){
-            System.out.println(exc.getMessage());
-        }
+        
+        remed.eliminar(Integer.parseInt(txtid_medico.getText()));
+        Limpiar();
     }//GEN-LAST:event_bteliminarActionPerformed
 
     private void btmodificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btmodificarActionPerformed
@@ -308,23 +299,12 @@ public void cargartipodemedico(){
         // BLOQUEO DE TEXTO
         txtcedula.setEnabled(false);
         txtmedico.setEnabled(false);
-        cbtipo.setEnabled(false);
-        PreparedStatement pst = null;
-        try{
-            pst=conex.prepareStatement("update medicos set domicilio=?,telefono=?,e_mail=?,especialidad=?,id_especialidad=? where id_medico=" + txtid_medico.getText());
-              
-              pst.setString(1, txtdomicilio.getText().toUpperCase());
-              pst.setString(2, txt_telefono.getText().toUpperCase());
-              pst.setString(3, txte_mail.getText().toUpperCase());
-              pst.setString(4, (String) cbtipo.getSelectedItem());
-              pst.setInt(5,Integer.parseInt(txtcg_tipo.getText()));
-         
-              pst.executeUpdate();
-              JOptionPane.showMessageDialog(null,"registro grabado exitosamente");
-              Limpiar();
-        }catch(SQLException exc){
-            System.out.println(exc.getMessage());
-        }
+        cbespecialidad.setEnabled(false);
+        
+        especialidades esp = (especialidades)cbespecialidad.getSelectedItem();
+        medicos med = new medicos (Integer.parseInt(txtid_medico.getText()),txtdomicilio.getText(),txt_telefono.getText(),txte_mail.getText(),esp);
+        remed.modificar(txtcedula.getText(),med);
+        Limpiar();
     }//GEN-LAST:event_btmodificarActionPerformed
 
     private void btnuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnuevoActionPerformed
@@ -338,7 +318,7 @@ public void cargartipodemedico(){
         txtmedico.setEnabled(true);
         //CAMPO DE TEXTO VACIO
         txtmedico.setText("");
-        cbtipo.setSelectedIndex(-1);
+        cbespecialidad.setSelectedIndex(-1);
         txtcedula.setText("");
         txtconsulta.setText("");
         txtdomicilio.setText("");
@@ -360,23 +340,9 @@ public void cargartipodemedico(){
         this.dispose();
     }//GEN-LAST:event_btregistroActionPerformed
 
-    private void cbtipoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbtipoActionPerformed
-        // CARGAR COMBOX
-        if(cbtipo.getSelectedIndex() != -1){
-            try{
-                Statement st =conex.createStatement();
-                String sql = "Select * from especialidades where descripcion= '"+cbtipo.getSelectedItem().toString()+"'";
-                ResultSet rs =st.executeQuery(sql);
-                while (rs.next()){
-                    txtcg_tipo.setText(rs.getString(1));
-                }
-
-            }catch(SQLException exc){
-                JOptionPane.showMessageDialog(null,exc.getMessage());
-                System.out.println(exc.getMessage());
-            }
-        }
-    }//GEN-LAST:event_cbtipoActionPerformed
+    private void cbespecialidadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbespecialidadActionPerformed
+       
+    }//GEN-LAST:event_cbespecialidadActionPerformed
 
     private void txtcedulaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtcedulaKeyTyped
         // TODO add your handling code here:
@@ -396,39 +362,6 @@ public void cargartipodemedico(){
         if(txtmedico.getText().length()==50){evt.consume();}
     }//GEN-LAST:event_txtmedicoKeyTyped
     
-    void mostrarDatos(String valor){
-    String sql="";
-    sql="SELECT * FROM medicos where cedula='"+ valor+"'";
-    try{
-        Statement st = conex.createStatement();
-        ResultSet rs = st.executeQuery(sql);
-        while (rs.next()){
-           txtid_medico.setText(rs.getString(1));
-           txtcedula.setText(rs.getString(2));
-           txtmedico.setText(rs.getString(3));
-           txtdomicilio.setText(rs.getString(4));
-           txt_telefono.setText(rs.getString(5));
-           txte_mail.setText(rs.getString(6));
-           cbtipo.setSelectedItem(rs.getString(7));
-           txtcg_tipo.setText(rs.getString(8));
-           llenartipo(txtcg_tipo.getText());
-        }
-    }catch(SQLException exc){
-        System.out.println(exc.getMessage());
-    }
-}
-void llenartipo(String valor){
-    try{
-        Statement st= conex.createStatement();
-        String sql="Select * from especialidades where descripcion='"+valor + "'";
-        ResultSet rs=st.executeQuery(sql);
-        while(rs.next()){
-            cbtipo.setSelectedItem(rs.getString(2));
-        }
-    }catch(SQLException exc){
-        System.out.println(exc.getMessage());
-    }
-    }
     /**
      * @param args the command line arguments
      */
@@ -446,20 +379,21 @@ void llenartipo(String valor){
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(medicos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(medico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(medicos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(medico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(medicos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(medico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(medicos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(medico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new medicos().setVisible(true);
+                new medico().setVisible(true);
             }
         });
     }
@@ -472,7 +406,7 @@ void llenartipo(String valor){
     private javax.swing.JButton btnuevo;
     private javax.swing.JButton btregistro;
     private javax.swing.JButton btsalir;
-    private javax.swing.JComboBox<String> cbtipo;
+    private javax.swing.JComboBox<String> cbespecialidad;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -501,11 +435,10 @@ void llenartipo(String valor){
     private javax.swing.JTextField txtid_medico;
     private javax.swing.JTextField txtmedico;
     // End of variables declaration//GEN-END:variables
-     conexion con=new conexion();
-     Connection conex=con.conexion();
+   
       private void Limpiar() {
         txtmedico.setText("");
-        cbtipo.setSelectedIndex(-1);
+        cbespecialidad.setSelectedIndex(-1);
         txtcedula.setText("");
         txtconsulta.setText("");
         txtdomicilio.setText("");

@@ -5,6 +5,7 @@
  */
 package proyecto;
 
+import clases.cita;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.print.PageFormat;
@@ -18,13 +19,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
+import repositorios.repositoriocitas;
 
 /**
  *
  * @author HewPack
  */
 public class factura_citas extends javax.swing.JFrame implements Printable {
-
+    conexion con=new conexion();
+    repositoriocitas recit =new repositoriocitas();
     /**
      * Creates new form factura_citas
      */
@@ -170,8 +173,16 @@ public class factura_citas extends javax.swing.JFrame implements Printable {
 
     private void bnconsultaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bnconsultaActionPerformed
         // CONSULTA
-      
-        mostrarDatos(txt_consulta.getText());
+       cita cit =(cita) recit.getCita(txt_consulta.getText());
+        lb_idcitas.setText(Integer.toString(cit.getId_citas()));
+        lb_fecha.setText(cit.getFecha().toString());
+        lb_hora.setText(cit.getHora());
+        lb_paciente.setText(cit.getPaciente().getNombres());
+        lb_cedula.setText(cit.getPaciente().getCedula());
+        lb_precio.setText(cit.getPrecio());
+        lb_especialidad.setText(cit.getEspecialidad().getNombre());
+        lb_medico.setText(cit.getMedico().getNombre());
+        
 
     }//GEN-LAST:event_bnconsultaActionPerformed
 
@@ -210,52 +221,7 @@ public void botonimprimircitas (){
         }
     }
     
-    void mostrarDatos(String valor){
-    String sql="";
-    sql="SELECT * FROM citas where cedula='"+ valor+"'";
-    try{
-        Statement st = conex.createStatement();
-        ResultSet rs = st.executeQuery(sql);
-        while (rs.next()){
-            lb_idcitas.setText(rs.getString(1));
-            lb_fecha.setText(rs.getString(2));
-            lb_hora.setText(rs.getString(3));
-            lb_paciente.setText(rs.getString(4));
-            lb_cedula.setText(rs.getString(5));
-            lb_precio.setText(rs.getString(6));
-            lb_especialidad.setText(rs.getString(7));
-            llenarespecialidad(lb_especialidad.getText());
-            lb_medico.setText(rs.getString(8));  
-            llenarmedicos(lb_medico.getText());
-        }
-    }catch(SQLException ex){
-        System.out.println(ex.getMessage());
-    }
-}
-void llenarespecialidad(String valor){
-    try{
-        Statement st= conex.createStatement();
-        String sql="Select * from especialidades where id_especialidad='"+valor + "'";
-        ResultSet rs=st.executeQuery(sql);
-        while(rs.next()){
-            lb_especialidad.setText(rs.getString(2));
-        }
-    }catch(SQLException exc){
-        System.out.println(exc.getMessage());
-    }
-}
-void llenarmedicos(String valor){
-    try{
-        Statement st= conex.createStatement();
-        String sql="Select * from medicos where id_medico="+valor;
-        ResultSet rs=st.executeQuery(sql);
-        while(rs.next()){
-            lb_medico.setText(rs.getString(3));
-        }
-    }catch(SQLException exc){
-        System.out.println(exc.getMessage());
-    }
-}
+    
 
 /**
      * @param args the command line arguments
@@ -323,6 +289,6 @@ void llenarmedicos(String valor){
     private javax.swing.JLabel lb_precio;
     private javax.swing.JTextField txt_consulta;
     // End of variables declaration//GEN-END:variables
-     conexion con=new conexion();
-     Connection conex=con.conexion();
+ 
+    
 }

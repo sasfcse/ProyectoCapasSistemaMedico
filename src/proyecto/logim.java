@@ -21,7 +21,7 @@ public class logim extends javax.swing.JFrame {
     
     PreparedStatement pstm = null;
     conexion con=new conexion();
-    Connection conex=con.conexion();
+    
     ResultSet rs = null;
     /**
      * Creates new form logim
@@ -130,6 +130,7 @@ public class logim extends javax.swing.JFrame {
         String usuario = "";
         String sql = "SELECT * FROM usuario where login=? and clave=?";
         try{
+            Connection conex = conexion.open();
             pstm = conex.prepareStatement(sql);
             pstm.setString(1, txtuser.getText());
             pstm.setString(2, txtcontraseña.getText());
